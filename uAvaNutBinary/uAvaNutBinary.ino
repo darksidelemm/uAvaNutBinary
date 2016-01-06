@@ -23,9 +23,9 @@
 		   Note that there is no temp sensor on this board. 
 
 	TODO
-	[ ] Finalise RTTY Sentence format 
+	[x] Finalise RTTY Sentence format (Habitat Doc ID 256360d5ef8ff950f9b542e91670da70)
 	[ ] Tune Modulator Delays for least PPM error.
-	[ ] Test Payload with GPS simulator to ensure lock maintained >12km.
+	[x] Test Payload with GPS simulator to ensure lock maintained >12km. (Works fine.)
 	[ ] Add 4FSK support, with independent symbol rate to RTTY/FSK.
 	[ ] Add GPS Powersaving support. 
 	[ ] Investigate using ATMega328 Onboard temp sensor.
@@ -103,7 +103,7 @@ void setup(){
 	// Setup IO pins
 
 	wdt_reset();
-	wdt_enable(WDTO_8S); // Disabling this for now.
+	//wdt_enable(WDTO_8S); // Disabling this for now.
 
 	pinMode(RADIO_TXD, OUTPUT);
 	pinMode(LED_OK, OUTPUT);
@@ -111,6 +111,7 @@ void setup(){
 	analogReference(DEFAULT);
 	digitalWrite(LED_WARN, HIGH);
 	digitalWrite(LED_OK, LOW);
+	pinMode(3, OUTPUT);
 
 	// Configure MTX2
 	setMTX2Frequency(MTX2_FREQ);
@@ -126,6 +127,7 @@ void setup(){
 	// Initialise our Position Strings.
 	dtostrf(latitude, 11, 5, latString);
 	dtostrf(longitude, 11, 5, longString);
+
 }
 
 void loop(){
@@ -146,8 +148,11 @@ void loop(){
 
 	// Only put the latitude information into the string if we have lock.
 	if(sats != 0){
+		pinMode(LED_OK, HIGH);
 		dtostrf(latitude, 11, 5, latString);
 		dtostrf(longitude, 11, 5, longString);
+	}else{
+		pinMode(LED_WARN, HIGH);
 	}
 
 	// ASCII String Generation.	
@@ -155,7 +160,10 @@ void loop(){
 	sprintf(txbuffer, "%s*%04X\n", txbuffer, gps_CRC16_checksum(txbuffer));
 	wdt_reset();
 
-	rtty_txstring(txbuffer);
+	pinMode(LED_OK, LOW);
+	pinMode(LED_WARN, LOW);
+
+	//rtty_txstring(txbuffer);
 
 	// Build and transmit binary packet.
 	int pkt_len = build_binary_packet(txbuffer);
@@ -178,9 +186,11 @@ void loop(){
 	#endif
 
 	// Transmit binary packet, with a short delay before it.
-	delay(100);
+	//delay(500);
 	fsk_txarray(txbuffer2,coded_len);
-	delay(100);
+	delay(500);
+	mfsk_txarray(txbuffer2,coded_len);
+	delay(500);
 
 	// Increment packet counter.
 	count++;

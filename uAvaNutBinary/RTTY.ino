@@ -75,15 +75,17 @@ void rtty_txbit (int bit)
 		if (bit)
 		{
 		  // high
-                  analogWrite(RADIO_TXD, 100+(RTTY_SHIFT/7)); // High
+			digitalWrite(3, HIGH);
+            analogWrite(RADIO_TXD, 100+(RTTY_SHIFT/7)); // High
 		}
 		else
 		{
 		  // low
-                  analogWrite(RADIO_TXD, 100);
+			digitalWrite(3, LOW);
+            analogWrite(RADIO_TXD, 100);
 		}
 
- 		_delay_ms(9.91525);	// Note: This value was determined by trial and error, 
+ 		_delay_ms(9.91);	// Note: This value was determined by trial and error, 
  							// using a CRO to acheive 100 baud, with about 150ppm error.
  							// Yes. I should probably be using interrupts instead. Sue me.
 }
